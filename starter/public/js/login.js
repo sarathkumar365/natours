@@ -13,14 +13,14 @@ export const login = async (email, password) => {
       // headers: headers,
       // credentials: 'include',
       // url: 'http://127.0.0.1:3000/api/v1/users/login',
-      url: 'http://localhost:3000/api/v1/users/login',
+      url: '/api/v1/users/login',
       // we should use localhost to prevent browser from not setting cookie
       data: {
         email,
         password,
       },
     });
-    console.log('api');
+
     if (res.data.status === 'success') {
       showAlert('success', 'Logged in successfully');
       window.setTimeout(() => {
@@ -36,7 +36,7 @@ export const logout = async () => {
   try {
     const res = await axios({
       method: 'GET',
-      url: 'http://localhost:3000/api/v1/users/logout',
+      url: '/api/v1/users/logout',
     });
     if (res.data.status === 'success') location.reload(true); // this set to true will ensure that we get a fresh page from server and donot reload from cache
   } catch (err) {
