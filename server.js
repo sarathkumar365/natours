@@ -11,14 +11,19 @@ process.on('uncaughtException', (err) => {
 
 const app = require('./app');
 
+const DB = process.env.DATABASE_CLOUD.replace(
+  '<PASSWORD>',
+  process.env.DATABASE_PASSWORD
+);
+
 mongoose
-  .connect(process.env.DATABASE_LOCAL, {
+  .connect(DB, {
     useNewUrlParser: true,
     useCreateIndex: true,
     useFindAndModify: false,
     useUnifiedTopology: true,
   })
-  .then(() => console.log('CONNECTED TO LOCAL DATABASE'));
+  .then(() => console.log('CONNECTED TO  DATABASE'));
 
 const port = process.env.PORT || 3000;
 const server = app.listen(port, () => {

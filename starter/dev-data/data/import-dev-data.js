@@ -7,13 +7,18 @@ const User = require('../../models/userModel');
 
 dotenv.config({ path: './config.env' });
 
+const DB = process.env.DATABASE_CLOUD.replace(
+  '<PASSWORD>',
+  process.env.DATABASE_PASSWORD
+);
+
 mongoose
-  .connect(process.env.DATABASE_LOCAL, {
+  .connect(DB, {
     useNewUrlParser: true,
     useCreateIndex: true,
     useFindAndModify: false,
   })
-  .then(() => console.log('CONNECTED TO LOCAL DATABASE'));
+  .then(() => console.log('CONNECTED TO  DATABASE'));
 
 //Read JSON Files
 const tours = JSON.parse(fs.readFileSync(`${__dirname}/tours.json`, 'utf-8'));
