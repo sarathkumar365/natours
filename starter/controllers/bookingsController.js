@@ -1,5 +1,7 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const Tour = require('../models/tourModel');
+const User = require('../models/userModel');
+
 const Bookings = require('../models/bookingModel');
 const catchAsync = require('../../utils/catchAsync');
 const AppError = require('../../utils/appError');
@@ -12,9 +14,10 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
   // Create checkout session
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
-    success_url: `${req.protocol}://${req.get('host')}/?tour=${
-      req.params.tourID
-    }&user=${req.user.id}&price=${tour.price}`,
+    // success_url: `${req.protocol}://${req.get('host')}/?tour=${
+    //   req.params.tourID
+    // }&user=${req.user.id}&price=${tour.price}`,
+    success_url: `${req.protocol}://${req.get('host')}/my-tours`,
     cancel_url: `${req.protocol}://${req.get('host')}/tour/${tour.slug}`,
     customer_email: req.user.email,
     client_reference_id: req.params.tourID,
@@ -36,18 +39,45 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.createBookinCheckout = catchAsync(async (req, res, next) => {
-  // Temporary solun
+// exports.createBookinCheckout = catchAsync(async (req, res, next) => {
+//   // Temporary solun
 
-  const { tour, user, price } = req.query;
+//   const { tour, user, price } = req.query;
 
-  if (!tour && !user && !price) return next();
+//   if (!tour && !user && !price) return next();
 
+//   await Bookings.create({ tour, user, price });
+
+//   // res.redirect(req.orginalUrl.split('?')[0]);
+//   res.redirect(`${req.protocol}://${req.get('host')}/`);
+// });
+
+const createBookinCheckout = async (session) => {
+  const tour = session.client_reference_id;
+  const user = User.findOne({ email: session.customer_email }).id;
+  const price = session.line_items[0].amount / 100;
   await Bookings.create({ tour, user, price });
+};
 
-  // res.redirect(req.orginalUrl.split('?')[0]);
-  res.redirect(`${req.protocol}://${req.get('host')}/`);
-});
+exports.webhookCheckout = (req, res, next) => {
+  const signature = req.headers['stripe-signature'];
+
+  let event;
+  try {
+    event = srtipe.webhooks.constructEvent(
+      req.body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (err) {
+    return res.status(400).send(`webhook error : ${err.message}`);
+  }
+
+  if (event.type === 'checkout.session.complete')
+    createBookinCheckout(event.data.object);
+
+  res.status(200).json({ received: true });
+};
 
 exports.createBooking = factory.createOne(Bookings);
 exports.getBooking = factory.getOne(Bookings);

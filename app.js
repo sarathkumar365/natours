@@ -8,7 +8,7 @@ const xss = require('xss-clean');
 const hpp = require('hpp');
 const cookieParser = require('cookie-parser');
 const compression = require('compression');
-// const cors = require('cors');
+const cors = require('cors');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./starter/controllers/errorController');
@@ -16,6 +16,7 @@ const tourRouter = require('./starter/routes/tourRoutes');
 const userRouter = require('./starter/routes/userRoutes');
 const reviewRouter = require('./starter/routes/reviewRoutes');
 const bookingsRouter = require('./starter/routes/bookingsRoute');
+const bookingsController = require('./starter/controllers/bookingsController');
 
 const viewRouter = require('./starter/routes/viewRouter');
 // const exp = require('constants');
@@ -29,12 +30,11 @@ app.set('view engine', 'pug');
 app.set('views', path.join(`${__dirname}/starter`, 'views'));
 
 // enable your service for CORS
-// const corsOptions = {
-//   credentials: true,
-//   origin: true,
-//   ///..other options
-// };
-// app.use(cors(corsOptions));
+
+app.use(cors());
+
+// enable preflight options_
+app.options('*', cors());
 
 //1.GLOBAL MIDDLEWARES
 
@@ -62,6 +62,11 @@ const limiter = rateLimit({
   message: 'Toomany requests...Pls try again in an hour!',
 });
 app.use('/api', limiter);
+app.post(
+  '/webhook-checkout',
+  express.raw({ type: 'application/json' }),
+  bookingsController.webhookCheckout
+);
 
 //Body parser, reading data from body into req.body
 app.use(express.json({ limit: '10kb' }));
