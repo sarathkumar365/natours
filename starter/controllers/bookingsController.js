@@ -55,7 +55,7 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
 // });
 
 const createBookingCheckout = async (session) => {
-  console.log('api');
+  console.log('api in booking');
   const tour = session.client_reference_id;
   const user = (await User.findOne({ email: session.customer_email })).id;
   const price = session.line_items[0].amount / 100;
@@ -63,6 +63,7 @@ const createBookingCheckout = async (session) => {
 };
 
 exports.webhookCheckout = (req, res, next) => {
+  console.log('api webhook');
   const signature = req.headers['stripe-signature'];
 
   let event;
@@ -75,7 +76,7 @@ exports.webhookCheckout = (req, res, next) => {
   } catch (err) {
     return res.status(400).send(`Webhook error: ${err.message}`);
   }
-  console.log(event.type);
+  console.log(`event is ${event.type}`);
   if (event.type === 'checkout.session.completed')
     createBookingCheckout(event.data.object);
 
