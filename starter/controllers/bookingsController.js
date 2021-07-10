@@ -57,7 +57,7 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
 
 const createBookingCheckout = async (session) => {
   console.log('api in booking');
-  console.log(`$session is ${JSON.parse(session)}`);
+
   console.log(
     session.client_reference_id,
     session.customer_email,
@@ -86,6 +86,7 @@ exports.webhookCheckout = (req, res, next) => {
   }
 
   if (event.type === 'checkout.session.completed') {
+    console.log(`$session is ${JSON.parse(event)}`);
     createBookingCheckout(event.data);
   }
 
