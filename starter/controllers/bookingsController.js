@@ -59,8 +59,8 @@ const createBookingCheckout = async (session) => {
   console.log('api in booking');
 
   console.log(
-    session.client_reference_id,
-    session.customer_email,
+    session.object.client_reference_id,
+    session.object.customer_email,
     session.object.amount_total
   );
   const tour = session.client_reference_id;
