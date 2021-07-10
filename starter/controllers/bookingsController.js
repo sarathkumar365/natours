@@ -59,9 +59,10 @@ const createBookingCheckout = async (session) => {
   console.log('api in booking');
   console.log(`session is ${JSON.parse(session)}`);
   const tour = session.client_reference_id;
-  const user = (await User.findOne({ email: session.customer_email })).id;
-  const price = session.line_items[0].amount / 100;
-  console.log(tour, user, price);
+  const user = (await User.findOne({ email: session.customer_details.email }))
+    .id;
+  const price = session.object.amount_total / 100;
+  console.log(`details ${(tour, user, price)}`);
   await Bookings.create({ tour, user, price });
 };
 
@@ -82,7 +83,6 @@ exports.webhookCheckout = (req, res, next) => {
   console.log(`event is ${event}`);
   if (event.type === 'checkout.session.completed') {
     createBookingCheckout(event.data.object);
-    console.log(`event details ${JSON.parse(event.data)}`);
   }
 
   res.status(200).json({ received: true });
